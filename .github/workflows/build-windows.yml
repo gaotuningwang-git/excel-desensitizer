@@ -5,7 +5,6 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  # 允许手动触发
   workflow_dispatch:
 
 jobs:
@@ -21,20 +20,37 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Debug info
+      shell: pwsh
+      run: |
+        python --version
+        python -c "import sys; print(sys.executable)"
+
     - name: Install dependencies
+      shell: pwsh
       run: |
         python -m pip install --upgrade pip
         pip install pandas openpyxl Flask Werkzeug pyinstaller
-        pip install numpy --upgrade
-
-    - name: Debug info
-      run: |
-        python --version
         pip list
 
     - name: Build EXE
+      shell: pwsh
       run: |
         pyinstaller --clean --noconfirm pyinstaller.spec
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Build failed with exit code $LASTEXITCODE"
+          exit 1
+        }
+
+    - name: Check output
+      shell: pwsh
+      run: |
+        if (Test-Path "dist/*.exe") {
+          Get-ChildItem dist/*.exe
+        } else {
+          Write-Host "No EXE file found in dist/"
+          Get-ChildItem dist/
+        }
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -44,7 +60,7 @@ jobs:
 
     - name: Create Release
       if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: dist/*.exe
         tag_name: v${{ github.run_number }}
