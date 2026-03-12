@@ -3,8 +3,6 @@ name: Build Windows EXE
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -20,57 +18,25 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Debug info
-      shell: pwsh
-      run: |
-        python --version
-        python -c "import sys; print(sys.executable)"
-
     - name: Install dependencies
-      shell: pwsh
+      shell: cmd
       run: |
         python -m pip install --upgrade pip
         pip install pandas openpyxl Flask Werkzeug pyinstaller
-        pip list
 
     - name: Build EXE
-      shell: pwsh
+      shell: cmd
       run: |
         pyinstaller --clean --noconfirm pyinstaller.spec
-        if ($LASTEXITCODE -ne 0) {
-          Write-Host "Build failed with exit code $LASTEXITCODE"
-          exit 1
-        }
 
     - name: Check output
       shell: pwsh
       run: |
-        if (Test-Path "dist/*.exe") {
-          Get-ChildItem dist/*.exe
-        } else {
-          Write-Host "No EXE file found in dist/"
-          Get-ChildItem dist/
-        }
+        Write-Host "Contents of dist folder:"
+        Get-ChildItem dist/ -ErrorAction SilentlyContinue
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: Excel数据脱敏工具-Windows
         path: dist/*.exe
-
-    - name: Create Release
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-      uses: softprops/action-gh-release@v2
-      with:
-        files: dist/*.exe
-        tag_name: v${{ github.run_number }}
-        name: Release v${{ github.run_number }}
-        body: |
-          Excel数据脱敏工具 Windows 版本
-
-          使用说明：
-          1. 下载下方的 .exe 文件
-          2. 双击运行，程序会自动打开浏览器
-          3. 无需安装 Python 或任何依赖
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
