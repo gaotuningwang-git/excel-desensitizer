@@ -2,13 +2,19 @@
 
 ## 常见问题
 
-### 1. 提示"找不到系统程序"或无法运行
+### 1. 提示"找不到系统程序"或无法运行（缺少 VCRUNTIME140.dll 等）
 
-**原因**：Windows 缺少必要的运行时库
+**原因**：Windows 缺少 Microsoft Visual C++ Redistributable 运行时库
 
 **解决方案**：
-- 下载并安装 Microsoft Visual C++ Redistributable：
+- **方法1**：下载并安装 Microsoft Visual C++ Redistributable：
   https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+- **方法2**：如果无法安装运行时，可以安装完整 Python 后运行源码：
+  ```
+  pip install pandas openpyxl Flask Werkzeug
+  python app.py
+  ```
 
 ### 2. 杀毒软件拦截或报毒
 
