@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas openpyxl Flask Werkzeug pyinstaller
 
-    - name: Build EXE with spec
+    - name: Build EXE (directory mode)
       shell: cmd
       run: |
         pyinstaller --clean --noconfirm pyinstaller.spec
@@ -33,10 +33,15 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Contents of dist folder:"
-        Get-ChildItem dist/ -ErrorAction SilentlyContinue
+        Get-ChildItem dist/ -ErrorAction SilentlyContinue -Recurse
+
+    - name: Create zip archive
+      shell: pwsh
+      run: |
+        Compress-Archive -Path "dist/Excel数据脱敏工具" -DestinationPath "dist/Excel数据脱敏工具-Windows.zip" -Force
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: Excel数据脱敏工具-Windows
-        path: dist/*.exe
+        path: dist/Excel数据脱敏工具-Windows.zip
