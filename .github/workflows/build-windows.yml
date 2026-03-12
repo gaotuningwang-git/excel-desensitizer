@@ -27,7 +27,7 @@ jobs:
     - name: Build EXE
       shell: cmd
       run: |
-        pyinstaller --clean --noconfirm pyinstaller.spec
+        pyinstaller --clean --noconfirm --name "Excel数据脱敏工具" --windowed --add-data "templates;templates" --add-data "static;static" --add-data "desensitizer.py;." --hidden-import pandas --hidden-import openpyxl --hidden-import flask --hidden-import werkzeug --hidden-import jinja2 --hidden-import numpy app.py
 
     - name: Check output
       shell: pwsh

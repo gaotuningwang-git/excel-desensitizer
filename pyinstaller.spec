@@ -1,11 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
 import sys
 from pathlib import Path
 
 block_cipher = None
 
 # 获取项目根目录（spec文件所在目录）
-root = Path(__file__).parent.absolute()
+root = Path(os.path.dirname(os.path.abspath(sys.argv[0]))).absolute()
 
 # 分析主应用
 a = Analysis(
