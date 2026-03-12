@@ -32,11 +32,19 @@ jobs:
     - name: Check output
       shell: pwsh
       run: |
+        Write-Host "Current directory:"
+        Get-Location
+        Write-Host ""
         Write-Host "Contents of dist folder:"
-        Get-ChildItem dist/ -ErrorAction SilentlyContinue
+        Get-ChildItem dist/ -ErrorAction SilentlyContinue -Recurse
+        Write-Host ""
+        Write-Host "Contents of root folder:"
+        Get-ChildItem . -ErrorAction SilentlyContinue
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: Excel数据脱敏工具-Windows
-        path: dist/*.exe
+        path: |
+          dist/**/*.exe
+          *.exe
