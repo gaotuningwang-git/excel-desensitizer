@@ -24,27 +24,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas openpyxl Flask Werkzeug pyinstaller
 
-    - name: Build EXE
+    - name: Build EXE with spec
       shell: cmd
       run: |
-        pyinstaller --clean --noconfirm --name "Excel数据脱敏工具" --windowed --add-data "templates;templates" --add-data "static;static" --add-data "desensitizer.py;." --hidden-import pandas --hidden-import openpyxl --hidden-import flask --hidden-import werkzeug --hidden-import jinja2 --hidden-import numpy app.py
+        pyinstaller --clean --noconfirm pyinstaller.spec
 
     - name: Check output
       shell: pwsh
       run: |
-        Write-Host "Current directory:"
-        Get-Location
-        Write-Host ""
         Write-Host "Contents of dist folder:"
-        Get-ChildItem dist/ -ErrorAction SilentlyContinue -Recurse
-        Write-Host ""
-        Write-Host "Contents of root folder:"
-        Get-ChildItem . -ErrorAction SilentlyContinue
+        Get-ChildItem dist/ -ErrorAction SilentlyContinue
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: Excel数据脱敏工具-Windows
-        path: |
-          dist/**/*.exe
-          *.exe
+        path: dist/*.exe
