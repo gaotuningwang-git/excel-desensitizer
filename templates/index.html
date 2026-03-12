@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel数据脱敏工具</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Excel数据脱敏工具</h1>
+            <p>对Excel文件中的敏感数据进行脱敏处理，支持脱敏后还原</p>
+        </header>
+
+        <!-- 功能标签页 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="desensitize">数据脱敏</button>
+            <button class="tab-btn" data-tab="restore">数据还原</button>
+        </div>
+
+        <!-- 脱敏功能 -->
+        <div id="desensitize-panel" class="tab-panel active">
+            <div class="card">
+                <h2>第一步：上传Excel文件</h2>
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
+                    <div class="upload-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>点击或拖拽上传Excel文件</p>
+                        <span class="upload-hint">支持 .xlsx, .xls 格式</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件信息 -->
+            <div id="file-info" class="card hidden">
+                <h3>文件信息</h3>
+                <p>文件名：<span id="file-name"></span></p>
+                <p>总行数：<span id="row-count"></span> 行</p>
+            </div>
+
+            <!-- 数据预览 -->
+            <div id="preview-section" class="card hidden">
+                <h3>数据预览（前5行）</h3>
+                <div class="table-container">
+                    <table id="preview-table">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 选择脱敏列 -->
+            <div id="columns-section" class="card hidden">
+                <h2>第二步：选择需要脱敏的列</h2>
+                <div class="columns-list" id="columns-list"></div>
+
+                <h3>脱敏模式</h3>
+                <div class="mode-selection">
+                    <label class="mode-option">
+                        <input type="radio" name="mask-mode" value="mask" checked>
+                        <span class="mode-label">
+                            <strong>保留首尾</strong>
+                            <small>如：张三 → 张*三，13800138000 → 138*****000</small>
+                        </span>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="mask-mode" value="full">
+                        <span class="mode-label">
+                            <strong>完全随机</strong>
+                            <small>如：张三 → MASK_A3F7B2D1</small>
+                        </span>
+                    </label>
+                </div>
+
+                <button id="desensitize-btn" class="btn btn-primary" disabled>
+                    开始脱敏
+                </button>
+            </div>
+
+            <!-- 脱敏结果 -->
+            <div id="result-section" class="card hidden">
+                <h2>脱敏完成！</h2>
+                <div class="result-preview">
+                    <h3>脱敏后预览</h3>
+                    <div class="table-container">
+                        <table id="result-table">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="download-section">
+                    <a id="download-masked" href="#" class="btn btn-success" download>下载脱敏文件</a>
+                    <a id="download-mapping" href="#" class="btn btn-secondary" download>下载对照表</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 还原功能 -->
+        <div id="restore-panel" class="tab-panel">
+            <div class="card">
+                <h2>上传文件进行还原</h2>
+                <div class="restore-uploads">
+                    <div class="upload-box">
+                        <label>脱敏后的Excel文件</label>
+                        <div class="upload-area small" id="upload-masked">
+                            <input type="file" id="masked-input" accept=".xlsx,.xls" hidden>
+                            <div class="upload-content">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                </svg>
+                                <span>点击上传</span>
+                            </div>
+                        </div>
+                        <p id="masked-filename" class="filename-display"></p>
+                    </div>
+                    <div class="upload-box">
+                        <label>对照表Excel文件</label>
+                        <div class="upload-area small" id="upload-mapping">
+                            <input type="file" id="mapping-input" accept=".xlsx,.xls" hidden>
+                            <div class="upload-content">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                </svg>
+                                <span>点击上传</span>
+                            </div>
+                        </div>
+                        <p id="mapping-filename" class="filename-display"></p>
+                    </div>
+                </div>
+
+                <button id="restore-btn" class="btn btn-primary" disabled>
+                    开始还原
+                </button>
+            </div>
+
+            <!-- 还原结果 -->
+            <div id="restore-result-section" class="card hidden">
+                <h2>还原完成！</h2>
+                <div class="result-preview">
+                    <h3>还原后预览</h3>
+                    <div class="table-container">
+                        <table id="restore-result-table">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="download-section">
+                    <a id="download-restored" href="#" class="btn btn-success" download>下载还原文件</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>处理中...</p>
+        </div>
+
+        <!-- 错误提示 -->
+        <div id="error-message" class="error-message hidden"></div>
+
+        <!-- 成功提示 -->
+        <div id="success-message" class="success-message hidden"></div>
+
+        <footer>
+            <p>Excel数据脱敏工具 - 本地处理，数据安全</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}?v=2"></script>
+</body>
+</html>
